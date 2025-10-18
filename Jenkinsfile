@@ -2,25 +2,23 @@ pipeline {
     agent any
 
     stages {
-        stage('Clone Repository') {
+        stage('Build') {
             steps {
-                git branch: 'master',
-                    url: 'https://github.com/shreeshreess394-alt/star-agile-health-care.git',
-                    credentialsId: 'github-token'
+                echo 'Building project...'
+                sh 'mvn clean package'
             }
         }
 
-        stage('Build using Maven') {
+        stage('Deploy to Tomcat') {
             steps {
-                echo "Building project using Maven..."
-                sh 'mvn clean package -DskipTests'
-            }
-        }
-
-        stage('Run Tests') {
-            steps {
-                echo "Running unit tests..."
-                sh 'mvn test'
+                echo 'Deploying WAR file to Tomcat...'
+                deploy adapters: [
+                    tomcat9(credentialsId: 'tomcat-creds', 
+                    path: '', 
+                    url: 'http://3.7.253.177:9090/')
+                ], 
+                contextPath: 'star-agile-health', 
+                war: 'target/*.war'
             }
         }
     }
